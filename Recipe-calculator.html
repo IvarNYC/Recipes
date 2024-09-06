@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Scaling Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .servings-input {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .servings-input div {
+            width: 48%;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .ingredient {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .ingredient-inputs {
+            display: flex;
+            justify-content: space-between;
+        }
+        .ingredient-inputs input, .ingredient-inputs select {
+            width: 32%;
+        }
+        .remove-btn {
+            background-color: #f44336;
+        }
+        .remove-btn:hover {
+            background-color: #d32f2f;
+        }
+        .scaled-recipe {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .scaled-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recipe Scaling Calculator</h1>
+        
+        <div class="servings-input">
+            <div>
+                <label for="original-servings">Original:</label>
+                <input id="original-servings" type="number" value="1" min="1">
+            </div>
+            <div>
+                <label for="new-servings">New Servings:</label>
+                <input id="new-servings" type="number" value="1" min="1">
+            </div>
+        </div>
+
+        <div id="ingredients-container">
+            <h2>Ingredients</h2>
+            <!-- Ingredients will be dynamically added here -->
+        </div>
+
+        <button id="add-ingredient">Add Ingredient</button>
+
+        <div id="scaled-recipe" class="scaled-recipe">
+            <h2>Scaled Recipe</h2>
+            <!-- Scaled recipe will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        let ingredients = [{ name: '', quantity: '', unit: 'g' }];
+
+        function updateUI() {
+            const ingredientsContainer = document.getElementById('ingredients-container');
+            const scaledRecipe = document.getElementById('scaled-recipe');
+            const originalServings = parseFloat(document.getElementById('original-servings').value) || 1;
+            const newServings = parseFloat(document.getElementById('new-servings').value) || 1;
+            const scaleFactor = newServings / originalServings;
+
+            ingredientsContainer.innerHTML = '<h2>Ingredients</h2>';
+            ingredients.forEach((ingredient, index) => {
+                ingredientsContainer.innerHTML += `
+                    <div class="ingredient">
+                        <input value="${ingredient.name}" placeholder="Ingredient name" onchange="updateIngredient(${index}, 'name', this.value)">
+                        <div class="ingredient-inputs">
+                            <input type="number" value="${ingredient.quantity}" placeholder="Quantity" min="0" step="0.01" onchange="updateIngredient(${index}, 'quantity', this.value)">
+                            <select onchange="updateIngredient(${index}, 'unit', this.value)">
+                                <option value="g" ${ingredient.unit === 'g' ? 'selected' : ''}>g</option>
+                                <option value="oz" ${ingredient.unit === 'oz' ? 'selected' : ''}>oz</option>
+                                <option value="ml" ${ingredient.unit === 'ml' ? 'selected' : ''}>ml</option>
+                                <option value="cup" ${ingredient.unit === 'cup' ? 'selected' : ''}>cup</option>
+                            </select>
+                            <button onclick="removeIngredient(${index})" class="remove-btn">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            scaledRecipe.innerHTML = '<h2>Scaled Recipe</h2>';
+            ingredients.forEach(ingredient => {
+                const scaledQuantity = (parseFloat(ingredient.quantity) * scaleFactor || 0).toFixed(2);
+                scaledRecipe.innerHTML += `
+                    <div class="scaled-item">
+                        <span>${ingredient.name || 'Ingredient'}</span>
+                        <span>${scaledQuantity} ${ingredient.unit}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function addIngredient() {
+            ingredients.push({ name: '', quantity: '', unit: 'g' });
+            updateUI();
+        }
+
+        function updateIngredient(index, field, value) {
+            ingredients[index][field] = value;
+            updateUI();
+        }
+
+        function removeIngredient(index) {
+            ingredients = ingredients.filter((_, i) => i !== index);
+            updateUI();
+        }
+
+        document.getElementById('add-ingredient').addEventListener('click', addIngredient);
+        document.getElementById('original-servings').addEventListener('input', updateUI);
+        document.getElementById('new-servings').addEventListener('input', updateUI);
+
+        updateUI();
+    </script>
+</body>
+</html>
